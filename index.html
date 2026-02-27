@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👑Sakshi with 👑Adarsh</title>
+
+<style>
+body{
+margin:0; 
+font-family:Georgia,serif;
+background:none;
+color:rgb(238, 223, 9);
+text-align:center;
+overflow-x:hidden;
+transition: all 0.8s ease;
+}
+.bottom-hero h1{
+font-size:52px;   /* You can change size here */
+}
+/* ===== ROYAL ANIMATED BORDER ===== */
+body::before{
+content:"";
+position:fixed;
+top:0;left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+border:8px solid transparent;
+border-image:linear-gradient(45deg,gold) 1;
+animation:borderMove 6s linear infinite;
+z-index:9999;
+}
+@keyframes borderMove{
+0%{filter:hue-rotate(0deg);}
+100%{filter:hue-rotate(360deg);}
+}
+
+.glow{
+text-shadow:0 0 15px gold,0 0 40px gold;
+}
+
+.hero,.bottom-hero{
+position:relative;
+height:100vh;
+}
+.hero-bg,.bottom-bg{
+position:absolute;
+width:100%;
+height:100%;
+background-size:cover;
+background-position:center;
+filter:none;  /* remove dark/brightness filter */
+}
+.overlay{
+position:absolute;
+width:100%;
+height:100%;
+background:transparent;   /* remove dark effect */
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+}
+.upload-btn-small{
+position:absolute;
+top:20px;
+right:20px;
+}
+.upload-btn-small input{display:none;}
+.upload-btn-small label{
+width:35px;height:35px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:gold;
+color:black;
+border-radius:50%;
+cursor:pointer;
+font-weight:bold;
+box-shadow:0 0 20px gold;
+}
+
+.intro{
+font-size:60px;
+animation:fadeIn 3s forwards;
+opacity:0;
+}
+@keyframes fadeIn{to{opacity:1;}}
+
+section{
+padding:80px 20px;
+border-top:1px solid rgba(255,215,0,0.2);
+}
+
+.royal-card{
+border:1px solid gold;
+padding:40px;
+margin:40px auto;
+max-width:800px;
+border-radius:20px;
+box-shadow:0 0 50px rgba(255,215,0,0.4);
+}
+
+.events-container{
+display:flex;
+flex-direction:column;
+gap:30px;
+max-width:500px;
+margin:auto;
+}
+
+.event-card{
+border:2px solid gold;
+padding:30px;
+border-radius:20px;
+box-shadow:0 0 40px rgba(255,215,0,0.3);
+}
+
+.event-images{
+margin-top:20px;
+height:350px;
+border-radius:20px;
+position:Fit;
+overflow:hidden;
+}
+.event-images img{
+width:100%;
+height:100%;
+object-fit:fit;
+display:none;
+border-radius:20px;
+position:absolute;
+top:0;
+left:0;
+}
+
+.event-images img.active{
+display:block;
+}
+
+/* ===== ADDED DELETED PORTION ===== */
+.image-wrapper{
+position:relative;
+width:100%;
+height:100%;
+}
+
+.delete-img{
+position:absolute;
+top:10px;
+right:10px;
+background:red;
+color:white;
+border:none;
+border-radius:50%;
+width:30px;
+height:30px;
+cursor:pointer;
+font-size:14px;
+font-weight:bold;
+box-shadow:0 0 10px red;
+z-index:10;
+}
+/* ================================= */
+
+/* Thumbnail */
+.thumbnail-bar{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+margin-top:15px;
+}
+
+.thumbnail-bar img{
+width:60px;
+height:60px;
+object-fit:cover;
+border-radius:10px;
+cursor:pointer;
+border:2px solid transparent;
+}
+
+.thumbnail-bar img.active-thumb{
+border:2px solid gold;
+}
+
+.symbol-btn{
+display:inline-block;
+width:30px;
+height:30px;
+line-height:30px;
+font-size:20px;
+font-weight:bold;
+border-radius:50%;
+cursor:pointer;
+margin:10px;
+text-align:center;
+}
+.plus{background:gold;color:black;}
+.minus{background:red;color:white;}
+
+input,textarea{
+padding:10px;margin:5px;width:260px;
+background:black;color:gold;border:1px solid gold;
+}
+button{
+background:gold;color:black;padding:10px 20px;
+border:none;cursor:pointer;font-weight:bold;
+margin-top:10px;
+}
+
+#countdown{
+position:fixed;
+bottom:20px;
+right:20px;
+background:rgba(0,0,0,0.8);
+border:2px solid gold;
+border-radius:15px;
+padding:15px 20px;
+display:flex;
+gap:15px;
+z-index:99999;
+box-shadow:0 0 20px gold;
+}
+#countdown div{text-align:center;}
+#countdown span{
+font-size:20px;
+font-weight:bold;
+display:block;
+}
+#countdown p{
+margin:0;
+font-size:12px;
+}
+
+#qrContainer{
+margin-top:20px;
+}
+#qrCode{
+border:2px solid gold;
+border-radius:15px;
+padding:10px;
+background:black;
+}
+/* ===== DARK / LIGHT MODE ===== */
+body.dark-mode{
+background:black;
+}
+
+body.light-mode{
+background:linear-gradient(135deg,#fff8e7,#fbe7b2,#f5d76e);
+color:#5a3e1b;
+}
+
+body.light-mode .royal-card,
+body.light-mode .event-card{
+border-color:#d4af37;
+box-shadow:0 0 25px rgba(212,175,55,0.3);
+}
+
+body.light-mode input,
+body.light-mode textarea{
+background:white;
+color:black;
+border:1px solid #d4af37;
+}
+
+body.light-mode #countdown{
+background:white;
+color:black;
+}
+
+/* Night sky only in dark */
+body.light-mode .stars{
+display:none;
+}
+
+/* Toggle Button */
+/* ===== ROYAL SUN MOON TOGGLE ===== */
+#modeToggle{
+position:fixed;
+bottom:15px;
+left:15px;
+width:10px;
+height:10px;
+border-radius:50%;
+border:3px solid gold;
+cursor:circle;
+font-size:28px;
+background:radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+box-shadow:0 0 25px gold, 0 0 50px gold inset;
+display:flex;
+align-items:center;
+justify-content:center;
+transition:all 0.6s ease;
+z-index:999999;
+animation:royalGlow 3s infinite alternate;
+}
+
+#modeToggle:hover{
+transform:rotate(20deg) scale(1.1);
+}
+
+@keyframes royalGlow{
+0%{box-shadow:0 0 20px gold;}
+100%{box-shadow:0 0 50px gold, 0 0 80px orange;}
+}
+
+/* Light mode button style */
+body.light-mode #modeToggle{
+background:radial-gradient(circle at 30% 30%, #ffffff, #ffeaa7);
+box-shadow:0 0 25px #f5d76e, 0 0 60px #ffd700 inset;
+}
+/* ===== FULL SCREEN IMAGE VIEWER ===== */
+#imageViewer{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.95);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999999;
+}
+
+#imageViewer img{
+max-width:95%;
+max-height:90%;
+border-radius:20px;
+box-shadow:0 0 40px gold;
+}
+
+#closeViewer{
+position:absolute;
+top:20px;
+right:30px;
+font-size:32px;
+color:gold;
+cursor:pointer;
+font-weight:bold;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media(max-width:768px){
+
+.intro{
+font-size:34px;
+}
+
+.royal-card{
+padding:20px;
+margin:20px 10px;
+}
+
+.event-images{
+height:220px;
+}
+
+.thumbnail-bar img{
+width:45px;
+height:45px;
+}
+
+input,textarea{
+width:90%;
+}
+
+#countdown{
+flex-direction:column;
+bottom:10px;
+right:10px;
+gap:8px;
+padding:10px;
+}
+}
+</style>
+</head>
+<button id="modeToggle" onclick="toggleMode()">
+  <span id="toggleIcon">🌙</span>
+</button>
+<body>
+
+  <audio id="bgMusic" autoplay loop>
+<source src="wedding-music.mp3" type="audio/mpeg">
+</audio>
+
+<header class="hero">
+<div class="hero-bg" id="heroBg"></div>
+<div class="overlay">
+<div class="upload-btn-small">
+<input type="file" id="topUpload" accept="image/*" onchange="setTopBg(event)">
+<label for="topUpload">+</label>
+</div>
+<div class="intro glow">ADARSH ❤️ SAKSHI</div>
+</div>
+</header>
+
+<section>
+<div class="royal-card">
+<h1 class="glow">👑Sakshi Singh👑</h1>
+<p>Daughter of Saroj Kumar Singh & Veena Singh</p>
+<p>Grandaughter of Late Chandrika Singh 
+Shanti Devi</p>
+<p>Sister of Samir Kumar Singh & Sachin Kumar Singh</p>
+</div>
+❤️WITH❤️
+<div class="royal-card">
+<h1 class="glow">👑Adarsh Kumar Singh👑</h1>
+<p>Son of Lt. Tuntun Singh & Ashilya Singh</p>
+<p>Grandson of Shri Ram Singh & Nagawali Devi</p>
+<p>Brother of Gaurav Kumar Singh & Kajal Mishra</p>
+<p>Brother-in-law: Sumit Mishra</p>
+<p>Uncle of Krishav & Shree Mishra</p>
+</div>
+</section>
+<section>
+<div class="royal-card" style="background:linear-gradient(145deg,rgba(255,215,0,0.05),rgba(255,215,0,0.15));">
+
+<h2 class="glow" style="font-size:32px;">💖 A Promise Written in the Stars 💖</h2>
+
+<p style="font-size:18px; line-height:1.8;">
+In a world full of millions of hearts,<br>
+two souls found each other…  
+not by chance, but by destiny. ✨
+</p>
+
+<p style="font-size:18px; line-height:1.8;">
+Through laughter and tears,  
+through prayers and dreams,  
+our journey has led us to this sacred union.
+</p>
+
+<p style="font-size:18px; line-height:1.8;">
+This wedding is not just a celebration of love,  
+but a promise to walk hand in hand forever —  
+with faith, trust, and endless devotion. 💛
+</p>
+
+<p style="font-size:18px; line-height:1.8;">
+We invite you to bless us with your presence,  
+your prayers, and your beautiful wishes  
+as we begin our forever together.
+</p>
+
+<div style="margin-top:25px; font-size:22px;" class="glow">
+👑 Sakshi ❤️WITH❤️ Adarsh 👑<br>
+<span style="font-size:16px;">Together Forever</span>
+</div>
+
+</div>
+</section>
+
+<section>
+<h2 class="glow">Wedding Events</h2>
+<div class="events-container" id="events"></div>
+</section>
+
+<section style="
+padding:120px 20px;
+position:relative;
+overflow:hidden;
+background:black;
+border-top:1px solid rgba(255,215,0,0.3);
+border-bottom:1px solid rgba(255,215,0,0.3);
+">
+
+<div class="stars"></div>
+
+<h2 style="
+color:gold;
+font-size:40px;
+text-shadow:0 0 20px gold, 0 0 40px gold;
+margin-bottom:20px;
+position:relative;
+z-index:2;
+">
+🚗 Baraat Route 🚗
+</h2>
+
+<p style="color:gold; font-size:18px; margin-bottom:30px; position:relative; z-index:2;">
+From <b>Hasanpura Market</b> to <b>Sarea, Janta Bazar - 841244</b>
+</p>
+
+<div style="position:relative; height:40px; margin-bottom:30px; overflow:hidden; z-index:2;">
+  <div style="position:absolute; font-size:14px; animation:dustMove 6s linear infinite;">💨💨💨</div>
+  <div style="position:absolute; font-size:22px; animation:carMove 6s linear infinite;">🚗</div>
+</div>
+
+<a href="https://www.google.com/maps/dir/Hasanpura+Market/Sarea+Janta+Bazar+841244/" target="_blank" style="position:relative; z-index:2;">
+<button style="
+background:gold;
+color:black;
+padding:14px 30px;
+font-size:15px;
+font-weight:bold;
+border:none;
+cursor:pointer;
+box-shadow:0 0 20px gold;
+">
+Open Route on Google Maps
+</button>
+</a>
+
+<div style="margin-top:40px; position:relative; z-index:2;">
+<iframe
+width="90%"
+height="350"
+style="border:2px solid gold; border-radius:20px; box-shadow:0 0 25px gold;"
+loading="lazy"
+allowfullscreen
+src="https://www.google.com/maps?q=Sarea+Janta+Bazar+841244&output=embed">
+</iframe>
+</div>
+
+</section>
+
+<style>
+/* Car Animation */
+@keyframes carMove {
+0% { left:-10%; }
+100% { left:110%; }
+}
+
+/* Dust Animation */
+@keyframes dustMove {
+0% { left:-15%; opacity:0; }
+10% { opacity:1; }
+100% { left:105%; opacity:0; }
+}
+
+/* Night Sky Stars */
+.stars {
+position:absolute;
+width:100%;
+height:100%;
+top:0;
+left:0;
+background:transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+animation:starsMove 60s linear infinite;
+z-index:1;
+opacity:0.6;
+}
+
+@keyframes starsMove {
+from {background-position:0 0;}
+to {background-position:1000px 1000px;}
+}
+</style>
+
+<section>
+<h2 class="glow" style="font-size:10px;">Send Your Blessings</h2>
+
+<p style="font-size:15px; max-width:600px; margin:20px auto;">
+Type your name and message, then either scan the QR code or click the button to send 💛
+</p>
+<input type="text" id="nameInput" placeholder="Your Name"><br>
+<textarea id="messageInput" placeholder="Your Message"></textarea><br>
+<div id="qrContainer">
+<canvas id="qrCode"></canvas>
+</div>
+<button onclick="sendViaWhatsApp()">Send via WhatsApp</button>
+<div id="wishList"></div>
+</section>
+
+<section class="bottom-hero">
+<div class="bottom-bg" id="bottomBg"></div>
+<div class="overlay">
+<div class="upload-btn-small">
+<input type="file" id="bottomUpload" accept="image/*" onchange="setBottomBg(event)">
+<label for="bottomUpload">+</label>
+</div>
+<h1 class="glow">Together Forever 💛</h1>
+</div>
+</section>
+
+<div id="countdown">
+<div><span id="days">0</span><p>Days</p></div>
+<div><span id="hours">0</span><p>Hours</p></div>
+<div><span id="minutes">0</span><p>Minutes</p></div>
+<div><span id="seconds">0</span><p>Seconds</p></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+
+// ===== CLOUDINARY SETTINGS =====
+const CLOUD_NAME = "djanjoccw";
+const UPLOAD_PRESET = "wedding_upload";
+
+document.body.addEventListener("click",function(){
+document.getElementById("bgMusic").play();
+},{once:true});
+
+// ===== PERMANENT HERO UPLOAD (CLOUDINARY) =====
+
+function setTopBg(e){
+
+let file = e.target.files[0];
+if(!file) return;
+
+let formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", UPLOAD_PRESET);
+formData.append("public_id", "hero_top");
+formData.append("folder", "wedding_backgrounds");
+
+fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{
+method:"POST",
+body:formData
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.secure_url){
+localStorage.setItem("heroTopPermanent", data.secure_url);
+document.getElementById("heroBg").style.backgroundImage =
+"url('" + data.secure_url + "')";
+alert("Top Background Updated Permanently ✅");
+}
+})
+.catch(()=>alert("Upload failed ❌"));
+
+e.target.value="";
+}
+
+function setBottomBg(e){
+
+let file = e.target.files[0];
+if(!file) return;
+
+let formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", UPLOAD_PRESET);
+formData.append("public_id", "hero_bottom");
+formData.append("folder", "wedding_backgrounds");
+
+fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{
+method:"POST",
+body:formData
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.secure_url){
+localStorage.setItem("heroBottomPermanent", data.secure_url);
+document.getElementById("bottomBg").style.backgroundImage =
+"url('" + data.secure_url + "')";
+alert("Bottom Background Updated Permanently ✅");
+}
+})
+.catch(()=>alert("Upload failed ❌"));
+
+e.target.value="";
+}
+window.onload=function(){
+createEvents();
+
+eventList.forEach(e=>{
+let id=e.replace(/\W/g,"");
+displayEvent(id);
+});
+}
+
+const eventList=[
+"21/04/2026 Haldi Kutai",
+"26/04/2026 Tilak",
+"27/04/2026 Haldi (Morning) Janew & Katha Matkor (Day), Mehndi (Night)",
+"28/04/2026 Wedding"
+];
+
+let slideIntervals={};
+
+function createEvents(){
+let c=document.getElementById("events");
+eventList.forEach(e=>{
+let id=e.replace(/\W/g,"");
+c.innerHTML+=`
+<div class="event-card">
+<h3>${e}</h3>
+<input type="file" id="${id}" accept="image/*" multiple onchange="saveEvent(event,'${id}')" style="display:none;">
+<span class="symbol-btn plus" onclick="document.getElementById('${id}').click()">+</span>
+<span class="symbol-btn minus" onclick="clearEvent('${id}')">-</span>
+<div class="event-images" id="${id}-images"></div>
+<div class="thumbnail-bar" id="${id}-thumbs"></div>
+</div>`;
+displayEvent(id);
+});
+}
+
+// CLOUDINARY UPLOAD
+function saveEvent(e,id){
+
+let savedImages = JSON.parse(localStorage.getItem(id)) || [];
+
+Array.from(e.target.files).forEach(file=>{
+
+let formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", UPLOAD_PRESET);
+formData.append("folder", "wedding");
+formData.append("public_id", id + "_" + Date.now());
+
+fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{
+method:"POST",
+body:formData
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.secure_url){
+savedImages.push(data.secure_url);
+localStorage.setItem(id, JSON.stringify(savedImages));
+displayEvent(id);
+}
+})
+.catch(()=>alert("Upload failed ❌"));
+
+});
+
+e.target.value="";
+}
+// DISPLAY EVENT IMAGES (UPDATED WITH DELETE BUTTON)
+function displayEvent(id){
+
+let imgBox = document.getElementById(id+"-images");
+let thumbBox = document.getElementById(id+"-thumbs");
+
+imgBox.innerHTML = "";
+thumbBox.innerHTML = "";
+
+let images = JSON.parse(localStorage.getItem(id)) || [];
+
+if(images.length === 0) return;
+
+/* ===== SHOW ONLY ONE IMAGE WRAPPER ===== */
+imgBox.innerHTML = `
+<div class="image-wrapper">
+    <img src="${images[0]}" class="active">
+    <button class="delete-img" onclick="deleteImage('${id}',0)">✖</button>
+</div>
+`;
+
+/* ===== CREATE THUMBNAILS ===== */
+images.forEach((url,i)=>{
+
+thumbBox.innerHTML += `
+<img src="${url}" 
+class="${i==0?'active-thumb':''}" 
+onclick="selectImage('${id}',${i})">
+`;
+
+});
+}
+// NEW DELETE IMAGE FUNCTION
+function deleteImage(id,index){
+let imgs=JSON.parse(localStorage.getItem(id))||[];
+imgs.splice(index,1);
+localStorage.setItem(id,JSON.stringify(imgs));
+displayEvent(id);
+}
+function selectImage(id,index){
+
+let imgBox = document.getElementById(id+"-images");
+let thumbBox = document.getElementById(id+"-thumbs");
+let images = JSON.parse(localStorage.getItem(id)) || [];
+
+if(images.length === 0) return;
+
+imgBox.innerHTML = `
+<div class="image-wrapper">
+    <img src="${images[index]}" class="active">
+    <button class="delete-img" onclick="deleteImage('${id}',${index})">✖</button>
+</div>
+`;
+
+let thumbs = thumbBox.querySelectorAll("img");
+thumbs.forEach(t=>t.classList.remove("active-thumb"));
+thumbs[index].classList.add("active-thumb");
+}
+
+// QR & WISH SECTION (UNCHANGED)
+const numbers = ["918860690647","917439165782"];
+const qr = new QRious({
+element: document.getElementById('qrCode'),
+size: 200,
+background: 'black',
+foreground: 'gold',
+level: 'H'
+});
+
+function updateQRCode(){
+let name = document.getElementById("nameInput").value.trim() || "[Your Name]";
+let msg = document.getElementById("messageInput").value.trim() || "[Type your message]";
+let qrText = numbers.map(num=>`https://wa.me/${num}?text=${encodeURIComponent(`💛 Wedding Blessings 💛\n\nFrom: ${name}\nMessage: ${msg}\nFor: Adarsh ❤️ Sakshi`)}`).join("\n");
+qr.value = qrText;
+}
+
+document.getElementById("nameInput").addEventListener("input", updateQRCode);
+document.getElementById("messageInput").addEventListener("input", updateQRCode);
+
+function sendViaWhatsApp(){
+updateQRCode();
+let name = document.getElementById("nameInput").value.trim();
+let msg = document.getElementById("messageInput").value.trim();
+if(!name || !msg){
+alert("Please enter your name and message 💛");
+return;
+}
+numbers.forEach(num=>{
+window.open(`https://wa.me/${num}?text=${encodeURIComponent(`💛 Wedding Blessings 💛\n\nFrom: ${name}\nMessage: ${msg}\nFor: Adarsh ❤️ Sakshi`)}`, "_blank");
+});
+let w=JSON.parse(localStorage.getItem("wishes"))||[];
+w.push({name:name,message:msg});
+localStorage.setItem("wishes",JSON.stringify(w));
+displayWishes();
+document.getElementById("nameInput").value="";
+document.getElementById("messageInput").value="";
+updateQRCode();
+}
+
+function displayWishes(){
+let w=JSON.parse(localStorage.getItem("wishes"))||[];
+wishList.innerHTML="";
+w.forEach((x,i)=>{
+wishList.innerHTML+=`<div class="wish"><b>${x.name}</b><br>${x.message}<button class="deleteWish" onclick="confirmDelete(${i})">Delete</button></div>`;
+});
+}
+
+function confirmDelete(index){
+if(confirm("Are you sure you want to delete this wish? 💔")){
+let w=JSON.parse(localStorage.getItem("wishes"))||[];
+w.splice(index,1);
+localStorage.setItem("wishes",JSON.stringify(w));
+displayWishes();
+}
+}
+
+const weddingDate=new Date("April 28, 2026 00:00:00").getTime();
+setInterval(function(){
+const now=new Date().getTime();
+const distance=weddingDate-now;
+if(distance<0){
+document.getElementById("countdown").innerHTML="🎉 Wedding Day 🎉";
+return;
+}
+days.innerHTML=Math.floor(distance/(1000*60*60*24));
+hours.innerHTML=Math.floor((distance%(1000*60*60*24))/(1000*60*60));
+minutes.innerHTML=Math.floor((distance%(1000*60*60))/(1000*60));
+seconds.innerHTML=Math.floor((distance%(1000*60))/1000);
+},1000);
+// ===== ROYAL ANIMATED THEME SWITCH =====
+function toggleMode(){
+let body = document.body;
+let icon = document.getElementById("toggleIcon");
+
+body.style.transition="background 0.8s ease, color 0.8s ease";
+
+if(body.classList.contains("light-mode")){
+body.classList.remove("light-mode");
+body.classList.add("dark-mode");
+localStorage.setItem("theme","dark");
+icon.innerHTML="🌙";
+}else{
+body.classList.remove("dark-mode");
+body.classList.add("light-mode");
+localStorage.setItem("theme","light");
+icon.innerHTML="☀";
+}
+}
+
+// Load saved theme
+window.addEventListener("load",function(){
+let savedTheme = localStorage.getItem("theme");
+let icon = document.getElementById("toggleIcon");
+
+if(savedTheme === "light"){
+document.body.classList.add("light-mode");
+icon.innerHTML="☀";
+}else{
+document.body.classList.add("dark-mode");
+icon.innerHTML="🌙";
+}
+});
+// Load Permanent Backgrounds
+window.addEventListener("load",function(){
+
+let topBg = localStorage.getItem("heroTopPermanent");
+let bottomBg = localStorage.getItem("heroBottomPermanent");
+
+if(topBg){
+document.getElementById("heroBg").style.backgroundImage =
+"url('" + topBg + "')";
+}
+
+if(bottomBg){
+document.getElementById("bottomBg").style.backgroundImage =
+"url('" + bottomBg + "')";
+}
+
+});
+
+</script>
