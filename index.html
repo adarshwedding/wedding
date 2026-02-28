@@ -727,66 +727,7 @@ displayEvent(id);
 
 e.target.value="";
 }
-// DISPLAY EVENT IMAGES (UPDATED WITH DELETE BUTTON)
-async function displayEvent(id){
 
-let imgBox = document.getElementById(id+"-images");
-let thumbBox = document.getElementById(id+"-thumbs");
-
-imgBox.innerHTML="";
-thumbBox.innerHTML="";
-
-try{
-
-let response = await fetch(
-`https://res.cloudinary.com/${CLOUD_NAME}/image/list/wedding.json`
-);
-
-let data = await response.json();
-
-let images = data.resources
-.filter(img => img.public_id.startsWith("wedding/"+id))
-.map(img => img.secure_url);
-
-if(images.length === 0) return;
-
-imgBox.innerHTML = `
-<div class="image-wrapper">
-<img src="${images[0]}" class="active">
-</div>
-`;
-
-images.forEach((url,i)=>{
-thumbBox.innerHTML += `
-<img src="${url}" 
-class="${i==0?'active-thumb':''}"
-onclick="selectCloudImage('${id}',${i},${JSON.stringify(images)})">
-`;
-});
-
-}catch(err){
-console.log("Error loading images");
-}
-}
-/* ===== SHOW ONLY ONE IMAGE WRAPPER ===== */
-imgBox.innerHTML = `
-<div class="image-wrapper">
-    <img src="${images[0]}" class="active">
-    <button class="delete-img" onclick="deleteImage('${id}',0)">✖</button>
-</div>
-`;
-
-/* ===== CREATE THUMBNAILS ===== */
-images.forEach((url,i)=>{
-
-thumbBox.innerHTML += `
-<img src="${url}" 
-class="${i==0?'active-thumb':''}" 
-onclick="selectImage('${id}',${i})">
-`;
-
-});
-}
 // NEW DELETE IMAGE FUNCTION
 function deleteImage(id,index){
 let imgs=JSON.parse(localStorage.getItem(id))||[];
