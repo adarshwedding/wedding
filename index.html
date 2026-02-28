@@ -575,14 +575,20 @@ Type your name and message, then either scan the QR code or click the button to 
 </section>
 
 <section class="bottom-hero">
-  <div class="bottom-bg" id="bottomBg"></div>
-<div class="overlay">
-<div class="upload-btn-small">
-<input type="file" id="bottomUpload" accept="image/*" onchange="setBottomBg(event)">
-<label for="bottomUpload">+</label>
-</div>
-<h1 class="glow">Together Forever 💛</h1>
-</div>
+  <!-- Permanent bottom background -->
+  <div class="bottom-bg"
+    style="background-image: url('https://res.cloudinary.com/djanjoccw/image/upload/v1772294738/wedding_backgrounds/hero_bottom.jpg');
+           background-size: cover;
+           background-position: center;">
+  </div>
+
+  <div class="overlay">
+    <div class="upload-btn-small">
+      <input type="file" id="bottomUpload" accept="image/*" onchange="setBottomBg(event)">
+      <label for="bottomUpload">+</label>
+    </div>
+    <h1 class="glow">Together Forever 💛</h1>
+  </div>
 </section>
 
 <div id="countdown">
