@@ -44,16 +44,13 @@ text-shadow:0 0 15px gold,0 0 40px gold;
 position:relative;
 height:100vh;
 }
-.hero-bg,
-.bottom-bg{
+.hero-bg,.bottom-bg{
 position:absolute;
-top:0;
-left:0;
 width:100%;
 height:100%;
 background-size:cover;
 background-position:center;
-background-repeat:no-repeat;
+filter:none;  /* remove dark/brightness filter */
 }
 .overlay{
 position:absolute;
@@ -124,13 +121,14 @@ box-shadow:0 0 40px rgba(255,215,0,0.3);
 margin-top:20px;
 height:350px;
 border-radius:20px;
-position:Fit;
+position:relative;
 overflow:hidden;
 }
+
 .event-images img{
 width:100%;
 height:100%;
-object-fit:fit;
+object-fit:cover;
 display:none;
 border-radius:20px;
 position:absolute;
@@ -382,6 +380,9 @@ padding:10px;
 }
 </style>
 </head>
+<button id="modeToggle" onclick="toggleMode()">
+  <span id="toggleIcon">🌙</span>
+</button>
 <body>
 
   <audio id="bgMusic" autoplay loop>
@@ -399,9 +400,8 @@ padding:10px;
       <input type="file" id="topUpload" accept="image/*" onchange="setTopBg(event)">
       <label for="topUpload">+</label>
     </div>
-    <div class="intro glow" onclick="checkAdmin()">
-ADARSH ❤️ SAKSHI
-</div>
+    <div class="intro glow">ADARSH ❤️ SAKSHI</div>
+  </div>
 </header>
 
 <section>
@@ -572,20 +572,14 @@ Type your name and message, then either scan the QR code or click the button to 
 </section>
 
 <section class="bottom-hero">
-  <!-- Permanent bottom background -->
-  <div class="bottom-bg"
-    style="background-image: url('https://res.cloudinary.com/djanjoccw/image/upload/v1772294738/wedding_backgrounds/hero_bottom.jpg');
-           background-size: cover;
-           background-position: center;">
-  </div>
-
-  <div class="overlay">
-    <div class="upload-btn-small">
-      <input type="file" id="bottomUpload" accept="image/*" onchange="setBottomBg(event)">
-      <label for="bottomUpload">+</label>
-    </div>
-    <h1 class="glow">Together Forever 💛</h1>
-  </div>
+<div class="bottom-bg" id="bottomBg"></div>
+<div class="overlay">
+<div class="upload-btn-small">
+<input type="file" id="bottomUpload" accept="image/*" onchange="setBottomBg(event)">
+<label for="bottomUpload">+</label>
+</div>
+<h1 class="glow">Together Forever 💛</h1>
+</div>
 </section>
 
 <div id="countdown">
@@ -667,88 +661,165 @@ e.target.value="";
 }
 window.onload=function(){
 createEvents();
-
-eventList.forEach(e=>{
-let id=e.replace(/\W/g,"");
-displayEvent(id);
-});
+displayWishes();
 }
 
-const eventList=[
+/* ===============================
+   🔥 LOCAL STORAGE EVENT SYSTEM
+   =============================== */
+
+const eventList = [
 "21/04/2026 Haldi Kutai",
 "26/04/2026 Tilak",
 "27/04/2026 Haldi (Morning) Janew & Katha Matkor (Day), Mehndi (Night)",
 "28/04/2026 Wedding"
 ];
 
-let slideIntervals={};
-
-function createEvents(){
-let c=document.getElementById("events");
-eventList.forEach(e=>{
-let id=e.replace(/\W/g,"");
-c.innerHTML+=`
-<div class="event-card">
-<h3>${e}</h3>
-<input type="file" id="${id}" accept="image/*" multiple onchange="saveEvent(event,'${id}')" style="display:none;">
-<span class="symbol-btn plus" onclick="document.getElementById('${id}').click()">+</span>
-<span class="symbol-btn minus" onclick="clearEvent('${id}')">-</span>
-<div class="event-images" id="${id}-images"></div>
-<div class="thumbnail-bar" id="${id}-thumbs"></div>
-</div>`;
-displayEvent(id);
-});
-}
-
-// CLOUDINARY UPLOAD
-function saveEvent(e,id){
-
-Array.from(e.target.files).forEach(file=>{
-
-let formData = new FormData();
-formData.append("file", file);
-formData.append("upload_preset", UPLOAD_PRESET);
-formData.append("folder", "wedding");
-formData.append("public_id", id + "_" + Date.now());
-
-fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{
-method:"POST",
-body:formData
-})
-.then(res=>res.json())
-.then(data=>{
-if(data.secure_url){
-displayEvent(id);
-}
-})
-.catch(()=>alert("Upload failed ❌"));
-
+window.addEventListener("load", function () {
+    createEvents();
 });
 
-e.target.value="";
+function createEvents() {
+    const container = document.getElementById("events");
+    container.innerHTML = "";
+
+    eventList.forEach(eventName => {
+
+        const id = eventName.replace(/\W/g, "");
+
+        container.innerHTML += `
+        <div class="event-card">
+            <h3>${eventName}</h3>
+
+            <input type="file" id="${id}" multiple accept="image/*"
+            onchange="saveEventImages(event,'${id}')"
+            style="display:none;">
+
+            <span class="symbol-btn plus"
+            onclick="document.getElementById('${id}').click()">+</span>
+
+            <span class="symbol-btn minus"
+            onclick="clearEvent('${id}')">-</span>
+
+            <div class="event-images" id="${id}-images"></div>
+            <div class="thumbnail-bar" id="${id}-thumbs"></div>
+        </div>
+        `;
+
+        loadEventImages(id);
+    });
 }
 
-// NEW DELETE IMAGE FUNCTION
-function deleteImage(id,index){
-let imgs=JSON.parse(localStorage.getItem(id))||[];
-imgs.splice(index,1);
-localStorage.setItem(id,JSON.stringify(imgs));
-displayEvent(id);
+/* ===============================
+   SAVE IMAGES TO LOCAL STORAGE
+   =============================== */
+
+function saveEventImages(e, id) {
+
+    let existingImages = JSON.parse(localStorage.getItem(id)) || [];
+
+    Array.from(e.target.files).forEach(file => {
+
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+            existingImages.push(event.target.result);
+            localStorage.setItem(id, JSON.stringify(existingImages));
+            loadEventImages(id);
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+    e.target.value = "";
 }
-function selectCloudImage(id,index,images){
 
-let imgBox = document.getElementById(id+"-images");
-let thumbBox = document.getElementById(id+"-thumbs");
+/* ===============================
+   LOAD IMAGES FROM LOCAL STORAGE
+   =============================== */
 
-imgBox.innerHTML = `
-<div class="image-wrapper">
-<img src="${images[index]}" class="active">
-</div>
-`;
+function loadEventImages(id) {
 
-let thumbs = thumbBox.querySelectorAll("img");
-thumbs.forEach(t=>t.classList.remove("active-thumb"));
-thumbs[index].classList.add("active-thumb");
+    const imgBox = document.getElementById(id + "-images");
+    const thumbBox = document.getElementById(id + "-thumbs");
+
+    if (!imgBox || !thumbBox) return;
+
+    imgBox.innerHTML = "";
+    thumbBox.innerHTML = "";
+
+    const images = JSON.parse(localStorage.getItem(id)) || [];
+
+    if (images.length === 0) return;
+
+    imgBox.innerHTML = `
+        <div class="image-wrapper">
+            <img src="${images[0]}" class="active">
+            <button class="delete-img"
+            onclick="deleteImage('${id}',0)">✖</button>
+        </div>
+    `;
+
+    images.forEach((img, index) => {
+
+        thumbBox.innerHTML += `
+            <img src="${img}"
+            class="${index === 0 ? 'active-thumb' : ''}"
+            onclick="selectImage('${id}',${index})">
+        `;
+    });
+}
+
+/* ===============================
+   SELECT IMAGE
+   =============================== */
+
+function selectImage(id, index) {
+
+    const images = JSON.parse(localStorage.getItem(id)) || [];
+    if (!images[index]) return;
+
+    const imgBox = document.getElementById(id + "-images");
+    const thumbBox = document.getElementById(id + "-thumbs");
+
+    imgBox.innerHTML = `
+        <div class="image-wrapper">
+            <img src="${images[index]}" class="active">
+            <button class="delete-img"
+            onclick="deleteImage('${id}',${index})">✖</button>
+        </div>
+    `;
+
+    const thumbs = thumbBox.querySelectorAll("img");
+    thumbs.forEach(t => t.classList.remove("active-thumb"));
+    if (thumbs[index]) thumbs[index].classList.add("active-thumb");
+}
+
+/* ===============================
+   DELETE SINGLE IMAGE
+   =============================== */
+
+function deleteImage(id, index) {
+
+    let images = JSON.parse(localStorage.getItem(id)) || [];
+
+    images.splice(index, 1);
+
+    localStorage.setItem(id, JSON.stringify(images));
+
+    loadEventImages(id);
+}
+
+/* ===============================
+   CLEAR FULL EVENT
+   =============================== */
+
+function clearEvent(id) {
+
+    if (confirm("Delete all images for this event?")) {
+        localStorage.removeItem(id);
+        loadEventImages(id);
+    }
 }
 
 // QR & WISH SECTION (UNCHANGED)
@@ -870,35 +941,6 @@ document.getElementById("bottomBg").style.backgroundImage =
 "url('" + bottomBg + "')";
 }
 
-});
-
-// ===== ADMIN CONTROL =====
-const ADMIN_PASSWORD = "adarsh123";   // change this password
-
-let isAdmin = false;
-
-// Ask password
-function checkAdmin(){
-let pass = prompt("Enter Admin Password:");
-if(pass === ADMIN_PASSWORD){
-isAdmin = true;
-showUploadButtons();
-alert("Admin Mode Activated 👑");
-}else{
-alert("Wrong Password ❌");
-}
-}
-
-// Show upload buttons only for admin
-function showUploadButtons(){
-document.querySelectorAll(".upload-btn-small").forEach(btn=>{
-btn.style.display="block";
-});
-}
-
-// Hide upload buttons by default
-document.querySelectorAll(".upload-btn-small").forEach(btn=>{
-btn.style.display="none";
 });
 
 </script>
