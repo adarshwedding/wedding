@@ -703,8 +703,6 @@ displayEvent(id);
 // CLOUDINARY UPLOAD
 function saveEvent(e,id){
 
-let savedImages = JSON.parse(localStorage.getItem(id)) || [];
-
 Array.from(e.target.files).forEach(file=>{
 
 let formData = new FormData();
@@ -720,8 +718,6 @@ body:formData
 .then(res=>res.json())
 .then(data=>{
 if(data.secure_url){
-savedImages.push(data.secure_url);
-localStorage.setItem(id, JSON.stringify(savedImages));
 displayEvent(id);
 }
 })
@@ -732,18 +728,46 @@ displayEvent(id);
 e.target.value="";
 }
 // DISPLAY EVENT IMAGES (UPDATED WITH DELETE BUTTON)
-function displayEvent(id){
+async function displayEvent(id){
 
 let imgBox = document.getElementById(id+"-images");
 let thumbBox = document.getElementById(id+"-thumbs");
 
-imgBox.innerHTML = "";
-thumbBox.innerHTML = "";
+imgBox.innerHTML="";
+thumbBox.innerHTML="";
 
-let images = JSON.parse(localStorage.getItem(id)) || [];
+try{
+
+let response = await fetch(
+`https://res.cloudinary.com/${CLOUD_NAME}/image/list/wedding.json`
+);
+
+let data = await response.json();
+
+let images = data.resources
+.filter(img => img.public_id.startsWith("wedding/"+id))
+.map(img => img.secure_url);
 
 if(images.length === 0) return;
 
+imgBox.innerHTML = `
+<div class="image-wrapper">
+<img src="${images[0]}" class="active">
+</div>
+`;
+
+images.forEach((url,i)=>{
+thumbBox.innerHTML += `
+<img src="${url}" 
+class="${i==0?'active-thumb':''}"
+onclick="selectCloudImage('${id}',${i},${JSON.stringify(images)})">
+`;
+});
+
+}catch(err){
+console.log("Error loading images");
+}
+}
 /* ===== SHOW ONLY ONE IMAGE WRAPPER ===== */
 imgBox.innerHTML = `
 <div class="image-wrapper">
@@ -770,18 +794,14 @@ imgs.splice(index,1);
 localStorage.setItem(id,JSON.stringify(imgs));
 displayEvent(id);
 }
-function selectImage(id,index){
+function selectCloudImage(id,index,images){
 
 let imgBox = document.getElementById(id+"-images");
 let thumbBox = document.getElementById(id+"-thumbs");
-let images = JSON.parse(localStorage.getItem(id)) || [];
-
-if(images.length === 0) return;
 
 imgBox.innerHTML = `
 <div class="image-wrapper">
-    <img src="${images[index]}" class="active">
-    <button class="delete-img" onclick="deleteImage('${id}',${index})">✖</button>
+<img src="${images[index]}" class="active">
 </div>
 `;
 
