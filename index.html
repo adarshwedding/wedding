@@ -42,7 +42,7 @@ text-shadow:0 0 15px gold,0 0 40px gold;
 
 .hero,.bottom-hero{
 position:relative;
-height:100vh;
+min-height:100vh;
 }
 .hero-bg,
 .bottom-bg{
@@ -105,44 +105,52 @@ border-radius:20px;
 box-shadow:0 0 50px rgba(255,215,0,0.4);
 }
 
-/* ===== PROFESSIONAL EVENT SECTION ===== */
+/* ===== PERFECT RESPONSIVE EVENT SECTION ===== */
 
 .events-container{
-width:100%;
 max-width:1100px;
 margin:60px auto;
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:30px;
-padding:0 15px;
+grid-template-columns:repeat(2, 500px);
+justify-content:center;
+gap:40px;
 }
 
+
+@media (max-width:1100px){
+.events-container{
+grid-template-columns:repeat(2,1fr);
+padding:0 15px;
+gap:20px;
+}
+}
 .event-card{
-background:white;
-border-radius:18px;
+background:#ffffff;
+border-radius:16px;
 overflow:hidden;
-box-shadow:0 8px 25px rgba(0,0,0,0.08);
-transition:0.4s ease;
-padding:0;
+box-shadow:0 10px 30px rgba(0,0,0,0.08);
+transition:0.3s ease;
+padding-bottom:15px;
 }
 
 .event-card:hover{
-transform:translateY(-5px);
-box-shadow:0 12px 35px rgba(0,0,0,0.15);
+transform:translateY(-6px);
+box-shadow:0 18px 45px rgba(0,0,0,0.15);
 }
 
 .event-card h3{
-padding:20px;
-font-size:18px;
-font-weight:600;
-color:#333;
+padding:18px 20px;
 margin:0;
-background:#fafafa;
+font-size:17px;
+font-weight:600;
+color:#222;
+background:#f9f9f9;
+text-align:left;
 }
 
 .event-images{
 width:100%;
-aspect-ratio:4/5;
+height:350px;
 position:relative;
 overflow:hidden;
 }
@@ -155,10 +163,18 @@ position:absolute;
 top:0;
 left:0;
 display:none;
+transition:0.4s ease;
 }
 
 .event-images img.active{
 display:block;
+}
+
+/* Mobile image height fix */
+@media (max-width:768px){
+.event-images{
+height:280px;
+}
 }
 /* ===== ADDED DELETED PORTION ===== */
 .image-wrapper{
@@ -276,8 +292,8 @@ color:#5a3e1b;
 }
 
 body.light-mode .event-card{
-background:white;
-box-shadow:0 8px 25px rgba(0,0,0,0.08);
+background:#ffffff;
+box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
 
 body.light-mode input,
@@ -414,7 +430,7 @@ height:50px;
 font-size:22px;
 }
 }
-img{
+img:not(.event-images img){
 max-width:100%;
 height:auto;
 }
@@ -617,7 +633,7 @@ Type your name and message, then either scan the QR code or click the button to 
 
 <section class="bottom-hero">
   <!-- Permanent bottom background -->
-  <div class="bottom-bg"
+ <div class="bottom-bg" id="bottomBg"
     style="background-image: url('https://res.cloudinary.com/djanjoccw/image/upload/v1772294738/wedding_backgrounds/hero_bottom.jpg');
            background-size: cover;
            background-position: center;">
@@ -717,7 +733,6 @@ let id=e.replace(/\W/g,"");
 displayEvent(id);
 });
 }
-
 const eventList=[
 "21/04/2026 Haldi Kutai",
 "26/04/2026 Tilak",
@@ -729,8 +744,11 @@ let slideIntervals={};
 
 function createEvents(){
 let c=document.getElementById("events");
+c.innerHTML="";   // important reset
+
 eventList.forEach(e=>{
 let id=e.replace(/\W/g,"");
+
 c.innerHTML+=`
 <div class="event-card">
 <h3>${e}</h3>
@@ -740,14 +758,12 @@ c.innerHTML+=`
 <div class="event-images" id="${id}-images"></div>
 <div class="thumbnail-bar" id="${id}-thumbs"></div>
 </div>`;
-displayEvent(id);
 });
 }
 
 // CLOUDINARY UPLOAD
 function saveEvent(e,id){
 
-let savedImages = JSON.parse(localStorage.getItem(id)) || [];
 
 Array.from(e.target.files).forEach(file=>{
 
@@ -764,8 +780,6 @@ body:formData
 .then(res=>res.json())
 .then(data=>{
 if(data.secure_url){
-savedImages.push(data.secure_url);
-localStorage.setItem(id, JSON.stringify(savedImages));
 displayEvent(id);
 }
 })
@@ -776,18 +790,46 @@ displayEvent(id);
 e.target.value="";
 }
 // DISPLAY EVENT IMAGES (UPDATED WITH DELETE BUTTON)
-function displayEvent(id){
+async function displayEvent(id){
 
 let imgBox = document.getElementById(id+"-images");
 let thumbBox = document.getElementById(id+"-thumbs");
 
-imgBox.innerHTML = "";
-thumbBox.innerHTML = "";
+imgBox.innerHTML="";
+thumbBox.innerHTML="";
 
-let images = JSON.parse(localStorage.getItem(id)) || [];
+try{
+
+let response = await fetch(
+`https://res.cloudinary.com/${CLOUD_NAME}/image/list/wedding.json`
+);
+
+let data = await response.json();
+
+let images = data.resources
+.filter(img => img.public_id.startsWith("wedding/"+id))
+.map(img => img.secure_url);
 
 if(images.length === 0) return;
 
+imgBox.innerHTML = `
+<div class="image-wrapper">
+<img src="${images[0]}" class="active">
+</div>
+`;
+
+images.forEach((url,i)=>{
+thumbBox.innerHTML += `
+<img src="${url}" 
+class="${i==0?'active-thumb':''}"
+onclick="selectImage('${id}',${i})">
+`;
+});
+
+}catch(err){
+console.log("Error loading images");
+}
+}
 /* ===== SHOW ONLY ONE IMAGE WRAPPER ===== */
 imgBox.innerHTML = `
 <div class="image-wrapper">
@@ -806,34 +848,9 @@ onclick="selectImage('${id}',${i})">
 `;
 
 });
-}
+
 // NEW DELETE IMAGE FUNCTION
 function deleteImage(id,index){
-let imgs=JSON.parse(localStorage.getItem(id))||[];
-imgs.splice(index,1);
-localStorage.setItem(id,JSON.stringify(imgs));
-displayEvent(id);
-}
-function selectImage(id,index){
-
-let imgBox = document.getElementById(id+"-images");
-let thumbBox = document.getElementById(id+"-thumbs");
-let images = JSON.parse(localStorage.getItem(id)) || [];
-
-if(images.length === 0) return;
-
-imgBox.innerHTML = `
-<div class="image-wrapper">
-    <img src="${images[index]}" class="active">
-    <button class="delete-img" onclick="deleteImage('${id}',${index})">✖</button>
-</div>
-`;
-
-let thumbs = thumbBox.querySelectorAll("img");
-thumbs.forEach(t=>t.classList.remove("active-thumb"));
-thumbs[index].classList.add("active-thumb");
-}
-
 // QR & WISH SECTION (UNCHANGED)
 const numbers = ["918860690647","917439165782"];
 const qr = new QRious({
